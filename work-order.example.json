@@ -1,0 +1,10 @@
+{
+  "id": "wo-1842",
+  "domain": "example.com",
+  "hostname": "dispatch.example.com",
+  "current_address": "192.0.2.10",
+  "new_address": "198.51.100.24",
+  "dispatch_status": "completed",
+  "photos": ["cabinet-front.jpg", "signal-test.jpg"],
+  "technician_follow_up": "Health check passed from the service van."
+}
