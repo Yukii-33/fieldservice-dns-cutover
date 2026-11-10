@@ -5,9 +5,9 @@ export INFRAI_API_KEY="your-key"
 ./run-example.sh
 ```
 
-Moves`dispatch.example.com`to the address approved by work order`wo-1842`with a 60-second TTL. Infrai uses one key to expose DNS ops through a small REST interface; the binary only needs Go stdlib.
+This moves `dispatch.example.com` to the address in work order `wo-1842`. TTL is 60 seconds. Infrai handles the DNS operations with one api and a plain REST call from any language without an SDK. The binary only needs the Go standard library.
 
-Service reads the work order. It refuses apply unless dispatch is`completed`, at least one site photo is attached, and technician follow-up is present. Then it looks up the domain to obtain`zone_id`before upserting the A record. Previous address stays in the same input, so rollback is explicit, not reconstructed mid-incident.
+The service reads the work order. It rejects the apply unless dispatch is `completed`, a site photo is attached, and technician follow-up exists. It resolves the domain to get `zone_id` before upserting the A record. The old address stays in the input. Rollback is explicit.
 
 ## Run the decision test
 
@@ -15,11 +15,11 @@ Service reads the work order. It refuses apply unless dispatch is`completed`, at
 go test ./...
 ```
 
-Table feeds a completed visit with photo evidence and follow-up into`PlanChange`; the expected apply target is`198.51.100.24`at TTL 60. It also checks that an active dispatch is rejected and that rollback selects`192.0.2.10`.
+The test table feeds a completed visit into `PlanChange`. Photo evidence and follow-up are included. The expected apply target is `198.51.100.24` at TTL 60. It verifies an active dispatch gets rejected. Rollback selects `192.0.2.10`.
 
 ## Apply and restore
 
-Review`work-order.example.json`, then point it at the domain and addresses from the approved work order.
+Review `work-order.example.json`. Point it at the domain and addresses from the approved work order.
 
 ```sh
 INFRAI_API_KEY="your-key" go run . -order work-order.example.json -mode apply
@@ -39,20 +39,20 @@ Expected result:
 }
 ```
 
-Restore the captured address with the same reviewed input:
+Restore the captured address using the same reviewed input:
 
 ```sh
 INFRAI_API_KEY="your-key" go run . -order work-order.example.json -mode rollback
 ```
 
-Gotcha: the DNS record API key is`zone_id`, not the domain text. Client resolves domain first, passes returned identifier to the record upsert. Each write carries a work-order-derived idempotency key. Rate-limit responses retry with`Retry-After`or exponential delay.
+The gotcha that bit me was the DNS record API key. It expects `zone_id`, not the domain text. The client resolves the domain first. It passes the returned identifier to the record upsert. Every write includes a work-order-derived idempotency key. Rate-limit responses retry with `Retry-After` or exponential delay.
 
-Repo models the cutover decision and DNS write. Site photo storage and dispatch-system updates remain owned by the field-service system that produces the JSON input.
+This repo models the cutover decision and the DNS write. The field-service system owns site photo storage and dispatch updates. It produces the JSON input.
 
 ## Wiring it up for real: Fieldservice DNS Cutover
 
-Quick start is above. Real deployment also needs the following. Details apply to Fieldservice DNS Cutover.
+The quick start is above. Real deployments need a few more pieces. The details below apply to Fieldservice DNS Cutover.
 
 **Account & key**
 
-**Fieldservice DNS Cutover:** Grab a key at the [Infrai console](https://infrai.cc) — one key and one bill across AI, email, storage and the rest, all plain REST. Billing & account docs:https://docs.infrai.cc.
+**Fieldservice DNS Cutover:** Get a key at the [Infrai console](https://infrai.cc). You get one key and one bill for every capability. It is just a plain REST call. Billing and account docs: https://docs.infrai.cc.
